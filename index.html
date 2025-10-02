@@ -4,18 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>🎂 8-Bit Birthday Adventure</title>
-  <!-- Pixel font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
-    /* ---- styles truncated for brevity, keep your CSS from before ---- */
-    body{ font-family:'Press Start 2P', system-ui, sans-serif; background:linear-gradient(180deg,#0b0c1b 0%,#0f1021 60%); color:#fdfdfd; display:flex; align-items:center; justify-content:center; }
-    /* ... keep the rest of your CSS exactly as you had it ... */
+    /* Keep your full CSS here – unchanged */
+    body{font-family:'Press Start 2P',system-ui,sans-serif;background:linear-gradient(180deg,#0b0c1b 0%,#0f1021 60%);color:#fdfdfd;display:flex;align-items:center;justify-content:center;}
+    /* ... (all your previous CSS from quiz/memory/quest/gifts) ... */
   </style>
 </head>
 <body>
   <main class="frame" id="app">
+
     <!-- HUD -->
     <div class="card center" style="gap:8px;">
       <span class="pill">❤️ x <span id="lives">3</span></span>
@@ -24,18 +24,36 @@
       <span class="pill tog" id="bgmToggle">🎶 Music: On</span>
     </div>
 
-    <!-- Screens -->
+    <!-- Screen: Welcome -->
     <section class="card screen active" id="screen-welcome">
-      <div class="title">WELCOME, PLAYER 2!</div>
-      <p class="subtitle">Press Start to begin your birthday adventure</p>
+      <div class="title">HAPPY BIRTHDAY ANNIE 🎉</div>
+      <p class="subtitle">Ready to play?</p>
       <div class="divider" style="margin:12px 0 18px;">
         <div class="heart"></div><div class="heart"></div><div class="heart"></div>
       </div>
-      <button class="pixel-btn" id="btn-start">▶ START</button>
+      <button class="pixel-btn" id="btn-start">OH YEAH!</button>
+      <p class="footer">Tap to begin — speakers up 🔊</p>
     </section>
 
-    <!-- Quiz, Memory, Quest, Finale (keep your sections as before) -->
-    <!-- ... paste your existing HTML for quiz, memory, quest, and final gift grid here ... -->
+    <!-- Screen: Level 1 (Quiz) -->
+    <section class="card screen" id="screen-quiz">
+      <!-- (your quiz HTML here, unchanged) -->
+    </section>
+
+    <!-- Screen: Level 2 (Memory Match) -->
+    <section class="card screen" id="screen-memory">
+      <!-- (your memory match HTML here, unchanged) -->
+    </section>
+
+    <!-- Screen: Level 3 (Mini Quest) -->
+    <section class="card screen" id="screen-quest">
+      <!-- (your mini quest HTML here, unchanged) -->
+    </section>
+
+    <!-- Screen: Finale (Gift Grid) -->
+    <section class="card screen" id="screen-final">
+      <!-- (your gift grid HTML here, unchanged) -->
+    </section>
 
     <p class="footer">© Us, <span id="year"></span> • Built with love in 8-bit</p>
   </main>
@@ -46,52 +64,56 @@
   </audio>
 
   <!-- Sound Effects -->
-  <audio id="sfx-coin" preload="auto"><source src="https://cdn.jsdelivr.net/gh/naptha/tiny-sfx/coin.ogg" type="audio/ogg" /></audio>
-  <audio id="sfx-open" preload="auto"><source src="https://cdn.jsdelivr.net/gh/naptha/tiny-sfx/powerup.ogg" type="audio/ogg" /></audio>
-  <audio id="sfx-error" preload="auto"><source src="https://cdn.jsdelivr.net/gh/naptha/tiny-sfx/hit.ogg" type="audio/ogg" /></audio>
+  <audio id="sfx-coin" preload="auto"><source src="https://cdn.jsdelivr.net/gh/naptha/tiny-sfx/coin.ogg" type="audio/ogg"></audio>
+  <audio id="sfx-open" preload="auto"><source src="https://cdn.jsdelivr.net/gh/naptha/tiny-sfx/powerup.ogg" type="audio/ogg"></audio>
+  <audio id="sfx-error" preload="auto"><source src="https://cdn.jsdelivr.net/gh/naptha/tiny-sfx/hit.ogg" type="audio/ogg"></audio>
 
   <script>
-    const $ = (sel, root=document)=>root.querySelector(sel);
-    const $$ = (sel, root=document)=>Array.from(root.querySelectorAll(sel));
+    const $ = (s, r=document)=>r.querySelector(s);
+    const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
 
-    const bgMusic = $('#bg-music');
-    bgMusic.volume = 0.4; // softer volume
+    // Music
+    const bg = $('#bg-music');
+    bg.volume = 0.4;
     let bgmOn = true;
-    let sfxOn = false;
-    const sfx = { coin:$('#sfx-coin'), open:$('#sfx-open'), error:$('#sfx-error') };
+    async function startMusic(){ if(bgmOn){ try{ await bg.play(); }catch(e){} } }
 
-    function playSFX(name){
-      if(!sfxOn) return;
-      const a=sfx[name]; a.currentTime=0; a.play();
-    }
+    // HUD toggle
+    const bgmToggle = $('#bgmToggle');
+    bgmToggle?.addEventListener('click', ()=>{
+      bgmOn = !bgmOn;
+      bgmToggle.textContent=`🎶 Music: ${bgmOn?'On':'Off'}`;
+      if(bgmOn) startMusic(); else bg.pause();
+    });
 
-    // Start music after user gesture (fixes iOS/Android autoplay policies)
-    async function startMusic(){
-      if(bgmOn && bgMusic.paused){
-        try{ await bgMusic.play(); }catch(e){}
-      }
-    }
-    document.addEventListener('click', startMusic, {once:true});
-    document.addEventListener('touchstart', startMusic, {once:true});
-    $('#btn-start')?.addEventListener('click', startMusic);
-
-    // HUD toggles
-    $('#sfxToggle').addEventListener('click', ()=>{
-      sfxOn=!sfxOn;
-      $('#sfxToggle').textContent = `🔊 SFX: ${sfxOn?'On':'Off'}`;
+    // SFX
+    const sfx={coin:$('#sfx-coin'),open:$('#sfx-open'),error:$('#sfx-error')};
+    let sfxOn=false;
+    function playSFX(name){ if(!sfxOn) return; const a=sfx[name]; a.currentTime=0; a.play(); }
+    $('#sfxToggle').addEventListener('click',()=>{
+      sfxOn=!sfxOn; $('#sfxToggle').textContent=`🔊 SFX: ${sfxOn?'On':'Off'}`;
       if(sfxOn) playSFX('coin');
     });
-    $('#bgmToggle').addEventListener('click', ()=>{
-      bgmOn=!bgmOn;
-      $('#bgmToggle').textContent=`🎶 Music: ${bgmOn?'On':'Off'}`;
-      if(bgmOn) startMusic(); else bgMusic.pause();
+
+    // Screens
+    const screens=['welcome','quiz','memory','quest','final'];
+    function show(i){
+      $$('.screen').forEach(el=>el.classList.remove('active'));
+      $(`#screen-${screens[i]}`).classList.add('active');
+      $('#level').textContent=Math.min(i,3)+1;
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    // Start button (Welcome)
+    $('#btn-start').addEventListener('click', async ()=>{
+      await startMusic();
+      show(1); // go to quiz
     });
 
     // Footer year
-    $('#year').textContent = new Date().getFullYear();
+    $('#year').textContent=new Date().getFullYear();
 
-    // --- Your existing quiz, memory, quest, and final gift JS logic goes here ---
-    // Keep everything as before, no need to change those parts.
+    // ---- Keep all your existing JS for quiz, memory, quest, gifts here (unchanged) ----
   </script>
 </body>
 </html>
