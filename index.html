@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🎂 8-Bit Birthday Adventure</title>
+  <!-- Pixel font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0f1021;        /* deep space */
+      --fg:#fdfdfd;        /* near-white */
+      --accent:#ff6b6b;    /* heart pink */
+      --accent2:#5eead4;   /* aqua */
+      --gold:#ffd166;      /* coin */
+      --shadow:#0a0b17;
+      --ink:#2a2c5a;
+      --card:#171833;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%; margin:0;}
+    body{
+      font-family:'Press Start 2P', system-ui, sans-serif;
+      background:linear-gradient(180deg, #0b0c1b 0%, var(--bg) 60%);
+      color:var(--fg);
+      display:flex; align-items:center; justify-content:center;
+    }
+
+    /* Mobile-first stage container */
+    .frame{
+      width:100%; max-width:560px; min-height:100dvh;
+      padding:16px; display:flex; flex-direction:column; gap:16px;
+    }
+
+    /* 8-bit card */
+    .card{ background:var(--card); border:4px solid var(--ink); box-shadow:0 6px 0 var(--shadow); border-radius:8px; padding:18px; }
+
+    .title{ font-size:22px; line-height:1.3; text-align:center; }
+    .subtitle{ font-size:12px; opacity:.9; text-align:center; }
+
+    .pixel-btn{
+      display:inline-block; text-align:center; text-decoration:none; cursor:pointer;
+      background:var(--accent); color:#1b0a0a; padding:14px 16px; border:4px solid #b84141;
+      box-shadow:0 6px 0 #7a2626; border-radius:6px; font-size:14px; width:100%;
+    }
+    .pixel-btn.secondary{
+      background:#9ca3af; border-color:#6b7280; box-shadow:0 6px 0 #4b5563; color:#0b0c10;
+    }
+    .pixel-btn:active{ transform:translateY(2px); box-shadow:0 4px 0 #7a2626; }
+    .secondary:active{ box-shadow:0 4px 0 #4b5563; }
+
+    .pill{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:3px solid var(--ink); border-radius:999px; font-size:10px; background:#0f1130; }
+    .tog{ cursor:pointer; user-select:none; }
+    .center{ display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:wrap; }
+
+    .footer{ text-align:center; font-size:10px; opacity:.75; }
+
+    /* Screens */
+    .screen{ display:none; }
+    .screen.active{ display:block; }
+
+    /* Heart divider */
+    .divider{ display:flex; align-items:center; gap:8px; justify-content:center; opacity:.9; }
+    .heart{ width:18px; height:18px; background:var(--accent); position:relative; transform:rotate(45deg); }
+    .heart:before,.heart:after{ content:""; position:absolute; width:18px; height:18px; background:var(--accent); border-radius:50%; }
+    .heart:before{ left:-9px; }
+    .heart:after{ top:-9px; }
+
+    /* Quiz (Level 1) */
+    .q{ margin:14px 0; }
+    .opt{ display:block; padding:12px; border:3px solid var(--ink); border-radius:6px; margin-top:8px; background:#0f1130; font-size:12px; }
+    .opt.correct{ border-color:#34d399; }
+    .opt.wrong{ border-color:#fb7185; }
+
+    /* Memory Match (Level 2) */
+    .mm-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-top:12px; }
+    .card-tile{
+      aspect-ratio:1/1; border:4px solid var(--ink); border-radius:8px; background:#12133a;
+      display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer; font-size:20px;
+    }
+    .card-tile.revealed{ background:#0f1130; border-color:#4ade80; }
+    .card-tile.matched{ background:#0b1f17; border-color:#22c55e; cursor:default; }
+    .mm-status{ font-size:11px; text-align:center; opacity:.9; margin-top:8px; }
+
+    /* Mini Quest (Level 3) */
+    .quest-wrap{ display:grid; grid-template-rows:auto auto; gap:10px; }
+    .quest-map{
+      display:grid; grid-template-columns: repeat(8, 1fr); gap:6px; padding:6px; background:#10122f; border:4px solid var(--ink); border-radius:8px;
+    }
+    .tile{
+      aspect-ratio:1/1; background:#1b1d45; border:3px solid #2d316a; border-radius:6px; position:relative; overflow:hidden;
+    }
+    .tile.goal{ background:#1a2b18; border-color:#2f6b35; }
+    .sprite{ width:70%; height:70%; background:linear-gradient(90deg, #5eead4 0%, #93c5fd 100%); border:3px solid #0b1b3a; border-radius:4px; position:absolute; inset:0; margin:auto; }
+    .msg{ font-size:11px; text-align:center; opacity:.95; }
+
+    .controls{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+    .controls .pixel-btn{ padding:10px 0; font-size:12px; }
+
+    /* Finale / Gift grid */
+    .grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; }
+    .box{
+      background:#1a1b3c; border:4px solid #303274; border-radius:8px; padding:12px; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; position:relative;
+    }
+    .box.revealed{ background:#10122f; border-color:#4ade80; }
+    .lid{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+    .lid .ribbon{ width:70%; height:12px; background:var(--gold); box-shadow:0 3px 0 #b88a1f; }
+    .lid .bow{ position:absolute; top:18px; width:24px; height:24px; background:var(--accent2); transform:rotate(45deg); }
+
+    .gift{ font-size:10px; text-align:center; line-height:1.5; padding:8px; }
+
+    @media (min-width:480px){
+      .title{ font-size:26px }
+      .gift{ font-size:12px }
+    }
+  </style>
+</head>
+<body>
+  <main class="frame" id="app">
+
+    <!-- HUD / Progress -->
+    <div class="card center" style="gap:8px;">
+      <span class="pill">❤️ x <span id="lives">3</span></span>
+      <span class="pill">Level <span id="level">1</span>/4</span>
+      <span class="pill tog" id="sfxToggle">🔊 SFX: Off</span>
+      <span class="pill tog" id="bgmToggle">🎶 Music: On</span>
+    </div>
+
+    <!-- Screen: Welcome -->
+    <section class="card screen active" id="screen-welcome">
+      <div class="title">WELCOME, PLAYER 2!</div>
+      <p class="subtitle">Press Start to begin your birthday adventure</p>
+      <div class="divider" style="margin:12px 0 18px;">
+        <div class="heart"></div><div class="heart"></div><div class="heart"></div>
+      </div>
+      <button class="pixel-btn" id="btn-start">▶ START</button>
+      <p class="footer">Tip: Add this page to your Home Screen for a retro app vibe.</p>
+    </section>
+
+    <!-- Screen: Level 1 (Relationship Quiz) -->
+    <section class="card screen" id="screen-quiz">
+      <div class="title">LEVEL 1: QUIZ</div>
+      <p class="subtitle">Get 3/3 to unlock the treasure!</p>
+
+      <div class="q" data-answer="b">
+        <div style="font-size:12px">Where was our first date?</div>
+        <label class="opt"><input type="radio" name="q1" value="a"> Arcade downtown</label>
+        <label class="opt"><input type="radio" name="q1" value="b"> Piano Café (foreshadowing 🎹)</label>
+        <label class="opt"><input type="radio" name="q1" value="c"> Sushi by the lake</label>
+      </div>
+
+      <div class="q" data-answer="c">
+        <div style="font-size:12px">Our perfect cozy night is…</div>
+        <label class="opt"><input type="radio" name="q2" value="a"> Gym then spreadsheets</label>
+        <label class="opt"><input type="radio" name="q2" value="b"> Loud club &amp; glow sticks</label>
+        <label class="opt"><input type="radio" name="q2" value="c"> Records + tea + cuddles</label>
+      </div>
+
+      <div class="q" data-answer="a">
+        <div style="font-size:12px">Pick our team mascot:</div>
+        <label class="opt"><input type="radio" name="q3" value="a"> A cute Pokémon</label>
+        <label class="opt"><input type="radio" name="q3" value="b"> A grumpy spreadsheet</label>
+        <label class="opt"><input type="radio" name="q3" value="c"> A rogue coffee bean</label>
+      </div>
+
+      <button class="pixel-btn" id="btn-quiz">Unlock ➜</button>
+    </section>
+
+    <!-- Screen: Level 2 (Memory Match) -->
+    <section class="card screen" id="screen-memory">
+      <div class="title">LEVEL 2: MEMORY MATCH</div>
+      <p class="subtitle">Flip pairs that represent “us.” Find them all to continue!</p>
+      <div class="mm-grid" id="mmGrid"></div>
+      <div class="mm-status" id="mmStatus">Pairs found: 0/4</div>
+      <div style="margin-top:10px;" id="mmActions">
+        <button class="pixel-btn secondary" id="mmReset">Shuffle</button>
+      </div>
+    </section>
+
+    <!-- Screen: Level 3 (Mini Quest) -->
+    <section class="card screen" id="screen-quest">
+      <div class="title">LEVEL 3: MINI QUEST</div>
+      <p class="subtitle">Guide our little duo to the glowing portal.</p>
+      <div class="quest-wrap">
+        <div class="quest-map" id="questMap"></div>
+        <div class="controls">
+          <button class="pixel-btn" id="up">▲</button>
+          <button class="pixel-btn" id="right">►</button>
+          <button class="pixel-btn" id="left">◄</button>
+          <button class="pixel-btn" id="down">▼</button>
+          <button class="pixel-btn secondary" id="qHint">💬 Hint</button>
+          <button class="pixel-btn secondary" id="qReset">↺ Reset</button>
+        </div>
+        <div class="card msg" id="qMsg">“You’re my favorite adventure buddy.”</div>
+      </div>
+    </section>
+
+    <!-- Screen: Finale / Gift Reveal -->
+    <section class="card screen" id="screen-final">
+      <div class="title">🏆 CONGRATS! FINAL REVEAL</div>
+      <p class="subtitle">Tap each gift box to reveal what’s inside.</p>
+
+      <div class="grid" style="margin-top:12px;">
+        <!-- Gift 1: Beach Fossils Concert -->
+        <div class="box" data-gift="concert">
+          <div class="lid"><div class="ribbon"></div><div class="bow"></div></div>
+          <div class="gift" hidden>
+            🎵 <strong>Beach Fossils</strong><br/>
+            Live in concert — two tickets for us!
+          </div>
+        </div>
+        <!-- Gift 2: Piano Café + 2 Nights -->
+        <div class="box" data-gift="inn">
+          <div class="lid"><div class="ribbon"></div><div class="bow"></div></div>
+          <div class="gift" hidden>
+            🎹 <strong>Piano Café &amp; Inn</strong><br/>
+            Dinner + <u>2-night stay</u> booked ✨
+          </div>
+        </div>
+        <!-- Gift 3: Pokémon Card -->
+        <div class="box" data-gift="pokemon">
+          <div class="lid"><div class="ribbon"></div><div class="bow"></div></div>
+          <div class="gift" hidden>
+            🃏 <strong>Pokémon Card</strong><br/>
+            A special pull just for you.
+          </div>
+        </div>
+        <!-- Gift 4: DIY Craft -->
+        <div class="box" data-gift="diy">
+          <div class="lid"><div class="ribbon"></div><div class="bow"></div></div>
+          <div class="gift" hidden>
+            ✂️ <strong>Hand-made</strong><br/>
+            A custom DIY surprise crafted by me.
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px;">
+        <p class="subtitle" style="margin:0">All four revealed? Tap below!</p>
+        <button class="pixel-btn" id="btn-end">Click to reveal your gifts!</button>
+      </div>
+    </section>
+
+    <p class="footer">© Us, <span id="year"></span> • Built with love in 8-bit</p>
+  </main>
+
+  <!-- Background Music (put 8bit_adventure.mp3 beside this HTML or change src) -->
+  <audio id="bg-music" autoplay loop>
+    <source src="2021-08-16_-_8_Bit_Adventure_-_www.FesliyanStudios.com.mp3" type="audio/mpeg">
+  </audio>  
+
+  <!-- Tiny SFX (public domain-ish samples) -->
+  <audio id="sfx-coin" preload="auto">
+    <source src="https://cdn.jsdelivr.net/gh/naptha/tiny-sfx/coin.ogg" type="audio/ogg" />
+  </audio>
+  <audio id="sfx-open" preload="auto">
+    <source src="https://cdn.jsdelivr.net/gh/naptha/tiny-sfx/powerup.ogg" type="audio/ogg" />
+  </audio>
+  <audio id="sfx-error" preload="auto">
+    <source src="https://cdn.jsdelivr.net/gh/naptha/tiny-sfx/hit.ogg" type="audio/ogg" />
+  </audio>
+
+  <script>
+    // --------- Utilities ----------
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+    const wait = (ms) => new Promise(r=>setTimeout(r, ms));
+
+    // --------- Global State ----------
+    const screens = ['welcome','quiz','memory','quest','final'];
+    let current = 0;
+    let sfxOn = false;
+    let bgmOn = true;
+
+    const sfx = {
+      coin: $('#sfx-coin'),
+      open: $('#sfx-open'),
+      error: $('#sfx-error')
+    };
+    const bgMusic = $('#bg-music');
+    bgMusic.volume = 0.4; // gentle start
+
+    function play(name){ if(!sfxOn) return; const a = sfx[name]; a.currentTime = 0; a.play(); }
+
+    function show(i){
+      $$('.screen').forEach(el=>el.classList.remove('active'));
+      $(`#screen-${screens[i]}`).classList.add('active');
+      $('#level').textContent = Math.min(i,3)+1; // HUD cap at 4
+      current = i;
+      scrollTo({top:0, behavior:'smooth'});
+    }
+
+    // HUD Toggles
+    $('#sfxToggle').addEventListener('click', ()=>{
+      sfxOn = !sfxOn;
+      $('#sfxToggle').textContent = `🔊 SFX: ${sfxOn? 'On':'Off'}`;
+      if(sfxOn) play('coin');
+    });
+    $('#bgmToggle').addEventListener('click', ()=>{
+      bgmOn = !bgmOn;
+      $('#bgmToggle').textContent = `🎶 Music: ${bgmOn? 'On':'Off'}`;
+      try {
+        if(bgmOn){ bgMusic.play(); } else { bgMusic.pause(); }
+      } catch(e) {}
+    });
+
+    // Respect browser autoplay policies: start music after first gesture if blocked
+    document.addEventListener('click', async ()=>{
+      if(bgmOn && bgMusic.paused){
+        try { await bgMusic.play(); } catch(e) {}
+      }
+    }, {once:true});
+
+    // Year + fun QR param
+    $('#year').textContent = new Date().getFullYear();
+    const params = new URLSearchParams(location.search);
+    if(params.get('qr')==='1'){ $('#lives').textContent = '∞'; }
+
+    // --------- Welcome -> Quiz ----------
+    $('#btn-start').addEventListener('click', ()=>{ play('coin'); show(1); });
+
+    // --------- Level 1: Quiz ----------
+    $('#btn-quiz').addEventListener('click', ()=>{
+      let ok = 0;
+      $$('.q').forEach(q=>{
+        const ans = q.dataset.answer;
+        const picked = $(`input[type=radio]:checked`, q)?.value;
+        $$('.opt', q).forEach(o=>o.classList.remove('correct','wrong'));
+        if(picked){
+          const label = $(`input[value="${picked}"]`, q).closest('.opt');
+          if(picked===ans){ label.classList.add('correct'); ok++; }
+          else { label.classList.add('wrong'); }
+        }
+      });
+      if(ok===3){ play('open'); show(2); }
+      else { play('error'); alert(`You got ${ok}/3 — try again!`); }
+    });
+
+    // --------- Level 2: Memory Match ----------
+    const mmGrid = $('#mmGrid');
+    const mmStatus = $('#mmStatus');
+    const mmReset = $('#mmReset');
+    const icons = ['🎹','🎵','🃏','❤️']; // 4 pairs
+    let mmCards = [];
+    let firstPick = null, lockBoard=false, pairs=0;
+
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+    function buildMM(){
+      pairs = 0; firstPick = null; lockBoard=false;
+      mmGrid.innerHTML = '';
+      mmCards = shuffle([...icons, ...icons]).map((icon, idx)=>{
+        const el = document.createElement('div');
+        el.className='card-tile';
+        el.dataset.icon = icon;
+        el.dataset.index = idx;
+        el.innerHTML = '<span style="opacity:.2">?</span>';
+        el.addEventListener('click', ()=>flipMM(el));
+        mmGrid.appendChild(el);
+        return el;
+      });
+      updateMM();
+      $('#mmActions').querySelectorAll('button').forEach(b=>b.disabled=false);
+    }
+    function flipMM(tile){
+      if(lockBoard || tile.classList.contains('matched') || tile===firstPick) return;
+      tile.classList.add('revealed');
+      tile.textContent = tile.dataset.icon;
+      if(!firstPick){ firstPick = tile; play('coin'); return; }
+      // second pick
+      lockBoard = true;
+      if(tile.dataset.icon === firstPick.dataset.icon){
+        tile.classList.add('matched');
+        firstPick.classList.add('matched');
+        play('open');
+        pairs++;
+        firstPick = null; lockBoard=false;
+        updateMM();
+      } else {
+        play('error');
+        setTimeout(()=>{
+          tile.classList.remove('revealed'); tile.innerHTML = '<span style="opacity:.2">?</span>';
+          firstPick.classList.remove('revealed'); firstPick.innerHTML = '<span style="opacity:.2">?</span>';
+          firstPick = null; lockBoard=false;
+        }, 700);
+      }
+    }
+    function updateMM(){
+      mmStatus.textContent = `Pairs found: ${pairs}/4`;
+      if(pairs===4){
+        mmStatus.textContent = `Pairs found: 4/4 ✅`;
+        // Proceed button
+        const nextBtn = document.createElement('button');
+        nextBtn.className='pixel-btn';
+        nextBtn.textContent='Onward to Level 3 ➜';
+        nextBtn.addEventListener('click', ()=>{ play('open'); show(3); });
+        $('#mmActions').innerHTML='';
+        $('#mmActions').appendChild(nextBtn);
+      }
+    }
+    mmReset.addEventListener('click', ()=>{ play('coin'); buildMM(); });
+    // initialize Level 2 when shown
+    const observer = new MutationObserver(()=>{
+      if($('#screen-memory').classList.contains('active')) buildMM();
+    });
+    observer.observe(document.body, {subtree:true, attributes:true, attributeFilter:['class']});
+
+    // --------- Level 3: Mini Quest ----------
+    const mapW = 8, mapH = 2; // slim path
+    const questMap = $('#questMap');
+    let pos = {x:0, y:0};
+    const msgs = {
+      '0,0': '“You’re my favorite adventure buddy.”',
+      '3,0': '“We keep leveling up together.”',
+      '5,0': '“I choose you. Always.”'
+    };
+    const goal = {x:7, y:0};
+
+    function buildQuest(){
+      questMap.innerHTML='';
+      for(let i=0;i<mapW*mapH;i++){
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        const x = i % mapW, y = Math.floor(i / mapW);
+        if(x===goal.x && y===goal.y) tile.classList.add('goal');
+        tile.dataset.x = x; tile.dataset.y = y;
+        questMap.appendChild(tile);
+      }
+      pos = {x:0, y:0};
+      drawSprite();
+      $('#qMsg').textContent = msgs['0,0'];
+    }
+    function tileAt(x,y){ return $(`.tile[data-x="${x}"][data-y="${y}"]`, questMap); }
+    function drawSprite(){
+      $$('.sprite', questMap).forEach(s=>s.remove());
+      const t = tileAt(pos.x, pos.y);
+      const s = document.createElement('div');
+      s.className='sprite';
+      t.appendChild(s);
+    }
+    function move(dx,dy){
+      const nx = pos.x+dx, ny = pos.y+dy;
+      if(nx<0||ny<0||nx>=mapW||ny>=mapH) { play('error'); return; }
+      pos = {x:nx, y:ny}; play('coin'); drawSprite();
+      const key = `${pos.x},${pos.y}`;
+      if(msgs[key]) $('#qMsg').textContent = msgs[key];
+      if(pos.x===goal.x && pos.y===goal.y){
+        $('#qMsg').textContent = 'Portal unlocked! ➜ Final Reveal';
+        setTimeout(()=>{ play('open'); show(4); }, 500);
+      }
+    }
+    $('#up').addEventListener('click', ()=>move(0,-1));
+    $('#down').addEventListener('click', ()=>move(0,1));
+    $('#left').addEventListener('click', ()=>move(-1,0));
+    $('#right').addEventListener('click', ()=>move(1,0));
+    $('#qReset').addEventListener('click', ()=>{ play('coin'); buildQuest(); });
+    $('#qHint').addEventListener('click', ()=>{ alert('Hint: Scoot right across the path to the glowing tile!'); });
+
+    // build quest when screen becomes active
+    const questObs = new MutationObserver(()=>{
+      if($('#screen-quest').classList.contains('active')) buildQuest();
+    });
+    questObs.observe(document.body, {subtree:true, attributes:true, attributeFilter:['class']});
+
+    // --------- Final Gifts ----------
+    $$('.box').forEach(box=>{
+      box.addEventListener('click', ()=>{
+        const gift = $('.gift', box);
+        const lid = $('.lid', box);
+        if(gift.hasAttribute('hidden')){
+          gift.removeAttribute('hidden');
+          box.classList.add('revealed');
+          lid.style.display='none';
+          play('open');
+        } else {
+          gift.toggleAttribute('hidden');
+          box.classList.toggle('revealed');
+          lid.style.display = gift.hasAttribute('hidden') ? 'flex' : 'none';
+        }
+      });
+    });
+
+    $('#btn-end').addEventListener('click', ()=>{
+      const allRevealed = $$('.box').every(b=>$('.gift', b) && !$('.gift', b).hasAttribute('hidden'));
+      if(!allRevealed){ play('error'); alert('Reveal all four gifts first!'); return; }
+      play('open');
+      const msg = `Your Gifts:\n\n• Beach Fossils Concert\n• Piano Café + 2-Night Stay\n• Pokémon Card\n• Hand-made DIY Surprise`;
+      alert(msg);
+    });
+
+    // --------- Kickoff ----------
+    // Ensure music reflects toggle on load
+    (async function init(){
+      if(!bgmOn) bgMusic.pause();
+      // Some browsers require interaction — handled above with once-click listener
+    })();
+  </script>
+</body>
+</html>
