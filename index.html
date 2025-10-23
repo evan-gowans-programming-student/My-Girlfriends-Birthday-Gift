@@ -22,11 +22,22 @@
     html,body{height:100%; margin:0;}
     body{
       font-family:'Press Start 2P', system-ui, sans-serif;
-      background:linear-gradient(180deg,#0b0c1b 0%,var(--bg) 60%);
+      background:linear-gradient(180deg, #0b0c1b 0%, var(--bg) 60%);
       color:var(--fg);
-      display:flex; align-items:center; justify-content:center;
+      display:flex;
+      justify-content:center;
+      /* Key change: don't vertically center tall content by default */
+      align-items:flex-start;
     }
-    .frame{width:100%;max-width:560px;min-height:100dvh;padding:16px;display:flex;flex-direction:column;gap:16px;}
+.frame{
+  width:100%;
+  max-width:560px;
+  min-height:calc(var(--vh, 1vh) * 100); /* uses JS var below */
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
     .card{background:var(--card);border:4px solid var(--ink);box-shadow:0 6px 0 var(--shadow);border-radius:8px;padding:18px;}
     .title{font-size:22px;line-height:1.3;text-align:center;}
     .subtitle{font-size:12px;opacity:.9;text-align:center;}
@@ -205,6 +216,30 @@
     $$('.box').forEach(b=>b.onclick=()=>{const g=$('.gift',b);const l=$('.lid',b);if(g.hasAttribute('hidden')){g.removeAttribute('hidden');b.classList.add('revealed');l.style.display='none';play('open');}else{g.toggleAttribute('hidden');b.classList.toggle('revealed');l.style.display=g.hasAttribute('hidden')?'flex':'none';}});
     $('#btn-end').onclick=()=>{const all=$$('.box').every(b=>!$('.gift',b).hasAttribute('hidden'));if(!all){play('error');alert('Reveal all four gifts first!');return;}play('open');alert(`Your Gifts:\n\n• Beach Fossils Concert\n• Piano Café + 2-Night Stay\n• Pokémon Card\n• Hand-made DIY Surprise`);};
     (async()=>{if(!bgmOn)bgMusic.pause();})();
+    // ---- Mobile viewport fix (handles iOS URL bar) ----
+function setVH() {
+  document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+}
+window.addEventListener('resize', setVH, { passive: true });
+setVH();
+
+    function show(i){
+  $$('.screen').forEach(el=>el.classList.remove('active'));
+  $(`#screen-${screens[i]}`).classList.add('active');
+
+  // HUD level (welcome shows 1)
+  $('#level').textContent = (i === 0) ? 1 : i;
+
+  // Only center the welcome screen; others start at top
+  document.body.style.alignItems = (i === 0) ? 'center' : 'flex-start';
+
+  // Hard scroll reset (covers iOS quirks)
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+
+  current = i;
+}
   </script>
 </body>
 </html>
