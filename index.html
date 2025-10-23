@@ -56,8 +56,25 @@
     .heart:before,.heart:after{content:"";position:absolute;width:18px;height:18px;background:var(--accent);border-radius:50%;}
     .heart:before{left:-9px;}
     .heart:after{top:-9px;}
-    .q{margin:14px 0;}
-    .opt{display:block;padding:12px;border:3px solid var(--ink);border-radius:6px;margin-top:8px;background:#0f1130;font-size:12px;}
+.q {
+  margin: 20px 0;          /* ✅ More space between questions */
+  padding-bottom: 6px;     /* ✅ Adds visual separation */
+  border-bottom: 1px dashed rgba(255,255,255,0.1); /* subtle divider */
+}
+.opt {
+  display: block;
+  padding: 14px 16px;
+  border: 3px solid var(--ink);
+  border-radius: 8px;
+  margin-top: 10px;
+  background: #0f1130;
+  font-size: 12px;
+  line-height: 1.6;        /* ✅ Better readability */
+  letter-spacing: 0.2px;   /* ✅ Slight spacing for pixel font */
+  word-break: break-word;  /* ✅ Handles long sentences properly */
+  white-space: normal;     /* ✅ Allows wrapping naturally */
+  text-align: left;        /* ✅ Align text cleanly for multiline */
+}
     .opt.correct{border-color:#34d399;}
     .opt.wrong{border-color:#fb7185;}
     .quest-wrap{display:grid;grid-template-rows:auto auto;gap:10px;}
